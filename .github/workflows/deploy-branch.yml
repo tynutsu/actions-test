@@ -28,9 +28,11 @@ jobs:
     - name: Install dependencies
       run: echo "npm install"
     - name: Build Angular
+      if: false
       run: echo "npm run build -- --prod"
       
   deploy-dev:
+    if: false
     needs: [create-artifact]
     environment: dev
     # The type of runner that the job will run on
@@ -45,7 +47,7 @@ jobs:
       run: echo "Deploy ui to Azure Web App"
 
   deploy-prod:
-    needs: [create-artifact]
+    needs: [deploy-dev]
     environment: prod
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -57,5 +59,4 @@ jobs:
     - name: Deploy server to Azure Web App PROD
       run: echo "Deploy server to Azure Web App"
     - name: Deploy ui to Azure Web App PROD
-      if: false
       run: echo "Deploy ui to Azure Web App"
