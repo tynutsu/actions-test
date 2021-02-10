@@ -57,4 +57,5 @@ jobs:
     - name: Deploy server to Azure Web App PROD
       run: echo "Deploy server to Azure Web App"
     - name: Deploy ui to Azure Web App PROD
+      if: false
       run: echo "Deploy ui to Azure Web App"
