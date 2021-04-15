@@ -23,7 +23,7 @@ jobs:
     steps:
     # Runs a single command using the runners shell
     - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
+      run: echo "Hello ${{ github.event.inputs.environment }}"
     - name: Set up Java version
       run: echo "Setting up java-version 11"
     - name: Build with Maven
@@ -37,7 +37,7 @@ jobs:
       run: echo "npm run build -- --prod"
       
   deploy-dev:
-    if: ${{ 'dev' == github.event.inputs.project }}
+    if: ${{ 'dev' == github.event.inputs.environment }}
     needs: [create-artifact]
     environment: dev
     # The type of runner that the job will run on
@@ -52,7 +52,7 @@ jobs:
       run: echo "Deploy ui to Azure Web App"
 
   deploy-prod:
-    if: ${{ 'prod' == github.event.inputs.project }}
+    if: ${{ 'prod' == github.event.inputs.environment }}
     needs: [create-artifact]
     environment: prod
     # The type of runner that the job will run on
