@@ -6,6 +6,11 @@ name: Deploy bop
 # or API.
 on:
   workflow_dispatch:
+    inputs:
+      project:
+        description: 'Environment'
+        required: true
+        default: 'dev'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
