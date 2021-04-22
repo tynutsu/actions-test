@@ -1,0 +1,112 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: On demand deploy
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI or API.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment'
+        required: true
+        default: 'dev'
+
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+        
+      - name: Set up Java version
+        uses: actions/setup-java@v1
+        with:
+          java-version: '11'
+
+      - name: Build with Maven
+        working-directory: ./server
+        run: mvn clean install
+
+  build-ui:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Set up Node version
+        uses: actions/setup-node@v1
+        with:
+          node-version: '12.x'
+
+      - name: Install dependencies
+        working-directory: ./ui/bop-ui
+        run: npm install
+
+      - name: Build Angular
+        working-directory: ./ui/bop-ui
+        run: npm run build -- --prod
+
+
+  deploy-dev:
+    if: ${{ 'dev' == github.event.inputs.environment }}
+    needs: [build-server,build-ui]
+    environment: dev
+    runs-on: ubuntu-latest
+    
+    steps:
+    - run: echo "running dev"
+    - name: Deploy bop-server to dev
+      if: false
+      uses: azure/webapps-deploy@v1
+      with:
+        app-name: 'bopservicesdev'
+        publish-profile: ${{ secrets.BOP_SERVER_DEV_PUBLISH_PROFILE }}
+#         publish-profile: ${{ secrets.AzureAppService_PublishProfile_489599d5814941f1a697dc76a2fa057f }}
+        package: '${{ github.workspace }}/server/application/target/*.jar'
+    - name: 'Deploy bop-ui to dev'
+      if: false
+      uses: azure/webapps-deploy@v1
+      with:
+        app-name: 'bopdev'
+        publish-profile: ${{ secrets.BOP_UI_DEV_PUBLISH_PROFILE }}
+#         publish-profile: <publishData><publishProfile profileName="bopuidev - Web Deploy" publishMethod="MSDeploy" publishUrl="bopuidev.scm.azurewebsites.net:443" msdeploySite="bopuidev" userName="$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuidev - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-049.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopuidev\$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuidev - ReadOnly - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-049dr.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopuidev\$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData> 
+        package: './ui/bop-ui/dist/bop-ui'
+        
+
+  deploy-staging:
+    if: ${{ 'staging' == github.event.inputs.environment }}
+    needs: [build-server,build-ui]
+    environment: stage
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Deploy bop-server to stage'
+        run: echo "Deploy server to Azure Web App stage environment"
+      - name: 'Deploy bop-ui to stage'
+        run: echo "Deploy ui to Azure Web App stage environment"
+
+
+  deploy-prod:
+    if: ${{ 'prod' == github.event.inputs.environment }}
+    needs: [build-server,build-ui]
+    environment: prod
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "running prod"
+      - name: 'Deploy bop-server to prod'
+        if: false
+        uses: azure/webapps-deploy@v1
+        with:
+          app-name: 'bopservicesprod'
+          slot-name: 'production'
+          publish-profile: ${{ secrets.BOP_SERVER_PROD_PUBLISH_PROFILE }}
+#           publish-profile: <publishData><publishProfile profileName="bopservicesprod - Web Deploy" publishMethod="MSDeploy" publishUrl="bopservicesprod.scm.azurewebsites.net:443" msdeploySite="bopservicesprod" userName="$bopservicesprod" userPWD="lukQiCsvByCAMltayr7gmfegF9HRkDPhzE52tmjoeYtKoMkgfR9fkgbDM3gr" destinationAppUrl="http://bopservicesprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopservicesprod - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-227.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopservicesprod\$bopservicesprod" userPWD="lukQiCsvByCAMltayr7gmfegF9HRkDPhzE52tmjoeYtKoMkgfR9fkgbDM3gr" destinationAppUrl="http://bopservicesprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopservicesprod - Zip Deploy" publishMethod="ZipDeploy" publishUrl="bopservicesprod.scm.azurewebsites.net:443" userName="$bopservicesprod" userPWD="lukQiCsvByCAMltayr7gmfegF9HRkDPhzE52tmjoeYtKoMkgfR9fkgbDM3gr" destinationAppUrl="http://bopservicesprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>
+          package: '${{ github.workspace }}/server/application/target/*.jar'
+      - name: 'Deploy bop-ui to prod'
+        if: false
+        uses: azure/webapps-deploy@v1
+        with:
+          app-name: 'bopprod'
+          publish-profile: ${{ secrets.BOP_UI_PROD_PUBLISH_PROFILE }}
+#           publish-profile: <publishData><publishProfile profileName="bopuiprod - Web Deploy" publishMethod="MSDeploy" publishUrl="bopuiprod.scm.azurewebsites.net:443" msdeploySite="bopuiprod" userName="$bopuiprod" userPWD="62rxJidgC0nnwGqnJTXniGRqLqzxrwe7Sneo1e9QDkGLd5iHS91nvkKWsa7i" destinationAppUrl="http://bopuiprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuiprod - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-223.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopuiprod\$bopuiprod" userPWD="62rxJidgC0nnwGqnJTXniGRqLqzxrwe7Sneo1e9QDkGLd5iHS91nvkKWsa7i" destinationAppUrl="http://bopuiprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuiprod - Zip Deploy" publishMethod="ZipDeploy" publishUrl="bopuiprod.scm.azurewebsites.net:443" userName="$bopuiprod" userPWD="62rxJidgC0nnwGqnJTXniGRqLqzxrwe7Sneo1e9QDkGLd5iHS91nvkKWsa7i" destinationAppUrl="http://bopuiprod.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData>
+          package: './ui/bop-ui/dist/bop-ui'
