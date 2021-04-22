@@ -52,7 +52,7 @@ jobs:
 
 
   deploy-dev:
-    if: ${{ 'dev' == github.event.inputs.environment }}
+    if: ${{ 'prod' != github.event.inputs.environment }}
     needs: [build-server,build-ui]
     environment: dev
     runs-on: ubuntu-latest
@@ -75,18 +75,7 @@ jobs:
         publish-profile: ${{ secrets.BOP_UI_DEV_PUBLISH_PROFILE }}
 #         publish-profile: <publishData><publishProfile profileName="bopuidev - Web Deploy" publishMethod="MSDeploy" publishUrl="bopuidev.scm.azurewebsites.net:443" msdeploySite="bopuidev" userName="$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuidev - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-049.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopuidev\$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile><publishProfile profileName="bopuidev - ReadOnly - FTP" publishMethod="FTP" publishUrl="ftp://waws-prod-blu-049dr.ftp.azurewebsites.windows.net/site/wwwroot" ftpPassiveMode="True" userName="bopuidev\$bopuidev" userPWD="meXfp6NeqrS7J2sE4ctp7LvsEpJiKLjauXccRztKeHm0XEmue3lZhK1Qjgtg" destinationAppUrl="http://bopuidev.azurewebsites.net" SQLServerDBConnectionString="" mySQLDBConnectionString="" hostingProviderForumLink="" controlPanelLink="http://windows.azure.com" webSystem="WebSites"><databases /></publishProfile></publishData> 
         package: './ui/bop-ui/dist/bop-ui'
-        
 
-  deploy-staging:
-    if: ${{ 'staging' == github.event.inputs.environment }}
-    needs: [build-server,build-ui]
-    environment: stage
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Deploy bop-server to stage'
-        run: echo "Deploy server to Azure Web App stage environment"
-      - name: 'Deploy bop-ui to stage'
-        run: echo "Deploy ui to Azure Web App stage environment"
 
 
   deploy-prod:
