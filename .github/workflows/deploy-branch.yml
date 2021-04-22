@@ -27,6 +27,7 @@ jobs:
       with:
         java-version: '11'
     - name: Build with Maven
+      if: false
       working-directory: ./server
       run: mvn clean install
 
