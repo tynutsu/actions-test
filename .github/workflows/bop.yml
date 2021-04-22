@@ -25,6 +25,7 @@ jobs:
           java-version: '11'
 
       - name: Build with Maven
+        if: false
         working-directory: ./server
         run: mvn clean install
 
@@ -40,10 +41,12 @@ jobs:
           node-version: '12.x'
 
       - name: Install dependencies
+        if: false
         working-directory: ./ui/bop-ui
         run: npm install
 
       - name: Build Angular
+        if: false
         working-directory: ./ui/bop-ui
         run: npm run build -- --prod
 
