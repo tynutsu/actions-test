@@ -14,31 +14,53 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "greet"
-  create-artifact:
+  # This workflow contains a three jobs: create-artifact, deploy-dev and deploy-prod
+  build-server:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.environment }}"
+    - uses: actions/checkout@master
     - name: Set up Java version
-      run: echo "Setting up java-version 11"
+      uses: actions/setup-java@v1
+      with:
+        java-version: '11'
     - name: Build with Maven
-      run: echo "mvn clean install"
+      working-directory: ./server
+      run: mvn clean install
+
+  build-ui:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - uses: actions/checkout@master
     - name: Set up Node version
-      run: echo "Set up Node version"
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12.x'
+    - name: Build with Maven
+      if: false
+      working-directory: ./server
+      run: mvn clean install
     - name: Install dependencies
-      run: echo "npm install"
+      if: false
+      working-directory: ./ui/bop-ui
+      run: npm install
+
     - name: Build Angular
       if: false
-      run: echo "npm run build -- --prod"
+      working-directory: ./ui/bop-ui
+      run: npm run build -- --prod
+    
+    - name: Send greeting
+      run: echo "Hello ${{ github.event.inputs.environment }}"
       
   deploy-dev:
     if: ${{ 'dev' == github.event.inputs.environment }}
-    needs: [create-artifact]
+    needs: [build-server,build-ui]
     environment: dev
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -53,7 +75,7 @@ jobs:
 
   deploy-prod:
     if: ${{ 'prod' == github.event.inputs.environment }}
-    needs: [create-artifact]
+    needs: [build-server]
     environment: prod
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
